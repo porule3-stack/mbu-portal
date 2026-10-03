@@ -151,6 +151,26 @@ app.get('/api/me', requireAuth, (req, res) => res.json(req.user));
 
 // ============= SEED ENDPOINTS (one-time setup) =============
 app.post('/api/dev/seed-admin', async (req, res) => {
+app.post('/api/dev/reset-db', async (req, res) => {
+  try {
+    await pool.query(`
+      DROP TABLE IF EXISTS camp_reports CASCADE;
+      DROP TABLE IF EXISTS users CASCADE;
+      DROP TABLE IF EXISTS sub_divisions CASCADE;
+      DROP TABLE IF EXISTS divisions CASCADE;
+      DROP TABLE IF EXISTS regions CASCADE;
+      DROP TABLE IF EXISTS schools CASCADE;
+    `);
+    res.json({ ok: true, message: 'All tables dropped. Wait for restart, then run seed-divisions.' });
+    // Restart the app so ensureTables() runs and recreates them
+    setTimeout(() => process.exit(0), 1500);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: e.message });
+  }
+});
+
+  
   try {
     const existing = await pool.query('SELECT COUNT(*) FROM users');
     if (existing.rows[0].count > 0) {
