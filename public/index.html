@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MBU Camps Portal – Gujarat Circle</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, "Segoe UI", Roboto, sans-serif; }
+    body { display: flex; align-items: center; justify-content: center; min-height: 100vh; background: linear-gradient(135deg, #1e3a8a, #3b82f6); }
+    .card { background: white; padding: 40px; border-radius: 12px; width: 380px; box-shadow: 0 20px 60px rgba(0,0,0,0.3); text-align: center; }
+    .logo { width: 70px; height: 70px; border-radius: 50%; background: #1e3a8a; color: white; display: inline-flex; align-items: center; justify-content: center; font-weight: bold; font-size: 22px; margin-bottom: 20px; }
+    h1 { font-size: 22px; margin-bottom: 6px; color: #1e3a8a; }
+    .sub { color: #666; margin-bottom: 24px; font-size: 14px; }
+    form { text-align: left; }
+    label { display: block; font-size: 13px; margin-top: 14px; margin-bottom: 6px; color: #444; font-weight: 600; }
+    input { width: 100%; padding: 10px 12px; border: 1px solid #ccd; border-radius: 6px; font-size: 15px; }
+    button { width: 100%; padding: 10px 12px; background: #1e3a8a; color: white; border: none; border-radius: 6px; font-size: 15px; cursor: pointer; margin-top: 20px; font-weight: 600; }
+    button:hover { background: #16306e; }
+    .err { color: #d33; margin-top: 12px; text-align: center; font-size: 13px; min-height: 18px; }
+    .ok { color: #1a7d1a; margin-top: 12px; text-align: center; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">MBU</div>
+    <h1>MBU Camps Portal</h1>
+    <p class="sub">Gujarat Circle</p>
+    <form id="f">
+      <label>Login Code</label>
+      <input type="text" id="login_code" maxlength="6" inputmode="numeric" placeholder="e.g. 999999" required />
+      <label>Password</label>
+      <input type="password" id="password" required />
+      <button type="submit">Login</button>
+      <p class="err" id="err"></p>
+      <p class="ok" id="ok"></p>
+    </form>
+  </div>
+  <script>
+    document.getElementById('f').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      document.getElementById('err').textContent = '';
+      document.getElementById('ok').textContent = '';
+      const code = document.getElementById('login_code').value;
+      const pw = document.getElementById('password').value;
+      try {
+        const r = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ login_code: code, password: pw })
+        });
+        const data = await r.json();
+        if (!r.ok) {
+          document.getElementById('err').textContent = data.error || 'Login failed';
+          return;
+        }
+        localStorage.setItem('token', data.token);
+        document.getElementById('ok').textContent = 'Welcome, ' + data.user.name + '!';
+        setTimeout(() => alert('Logged in as ' + data.user.name + ' (' + data.user.role + ')'), 300);
+      } catch (err) {
+        document.getElementById('err').textContent = 'Network error';
+      }
+    });
+  </script>
+</body>
+</html>
